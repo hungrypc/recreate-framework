@@ -159,4 +159,35 @@ With this comment, babel transpiles the jsx with the function we define.
 
 ## Step 2: The `render` Function
 
-Next, we'll write our own `ReactDOM.render` function
+Next, we'll write our own `ReactDOM.render` function. For now, we only care about adding stuff to the DOM, will handle updating and deleting later.
+
+
+```js
+function render(element, container) {
+    // we start by creating the DOM node using the element type
+    // if the element type is TEXT_ELEMENT we create a text node instead of a regular node
+    const dom = 
+        element.type == 'TEXT_ELEMENT'
+        ? document.createTextNode('')
+        : document.createElement(element.type)
+
+    // here, we assign the element props to the node
+    const isProperty = key => key !== 'children'
+    Object.keys(element.props)
+        .filter(isProperty)
+        .forEach(name => {
+            dom[name] = element.props[name]
+        })
+
+    // recursively do the same for each child
+    element.props.children.forEach(child =>
+        render(child, dom)
+    )
+
+    // then append the new node to the container
+    container.appendChild(dom)
+}
+```
+
+And there we have it, a library that can render jsx to the DOM.
+
