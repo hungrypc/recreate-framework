@@ -231,4 +231,33 @@ To start using the loop we'll need to set the first unit of work, and then write
 
 ## Step 4: Fibers
 
+More info:
+- [React Fiber](https://programmingwithmosh.com/javascript/react-fiber/)
+- [Exploring React Fiber Tree](https://medium.com/@bendtherules/exploring-react-fiber-tree-20cbf62fe808)
+- [React Fiber Architecture](https://github.com/acdlite/react-fiber-architecture)
+
+To organize the units of work, we'll need a data structure: a fiber tree.
+
+We'll have one fiber for each element and each fiber will be a unit of work. For example, suppose we want to render an element tree like as follows:
+```jsx
+Didact.render(
+    <div>
+        <h1>
+            <p />
+            <a />
+        </h1>
+        <h2 />
+    </div>,
+    container
+)
+```
+
+In the `render` we'll create the root fiber and set it as the `nextUnitOfWork`. The rest of the work will happen on the `performUnitOfWork` function, there we will do 3 things for each fiber:
+1. Add the element to the DOM
+2. Create the fibers for the element's children
+3. Select the next unit of work
+
+One of the goals of this data structure is to make it easy to find the next unit of work. That's why each fiber has a link to its first child, its next sibling, and its parent.
+
+![fiber tree](/notes-assets/fiber2.png)
 
