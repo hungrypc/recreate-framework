@@ -191,3 +191,44 @@ function render(element, container) {
 
 And there we have it, a library that can render jsx to the DOM.
 
+## Step 3: Concurrent Mode
+
+Before we add more code, we need a refactor.
+
+There's a problem with the recursive call.
+
+Once we start rendering, we won't stop until we've rendered the complete element tree. If the element tree is big, it may bock the main thread for too long. If the browser needs to do high priority stuff like handling user input, it has to wait until the render finishes. 
+
+So, we're going to break the work into small units, and after we finish each unit we'll let the browser interrupt the rendering if there's anything else that needs to be done. 
+
+```js
+let nextUnitOfWork = null
+
+function workLoop(deadline) {
+    let shouldYield = false 
+    while (nextUnitOfWork && !shouldYield) {
+        nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+        shouldYield = deadline.timeRemaining() < 1
+    }
+    requestIdleCallback(workLoop)
+}
+
+requestIdleCallback(workLoop)
+
+function performUnitOfWork(nextUnitOfWork) {
+    // todo
+}
+```
+> [`requestIdleCallback()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) method queues a function to be called during a browser's idle periods. This enables developers to perform background and low priority work on the main event loop, without impacting latency-critical events such as animation and input response.
+
+We use `requestIdleCallback` to make a loop. We can think of `requestIdleCallback` as a `setTimeout`, but instead of us telling it when to run, the browser will run the callback when the main thread is idle. 
+
+(note: React doesnt use `requestIdleCallback` anymore, it uses the [scheduler](https://github.com/facebook/react/tree/master/packages/scheduler) package. But for this use case, it's conceptually the same)
+
+`requestIdleCallback` also gives us a dealine parameter. We can use it to check how much time we hav until the browser needs to take control again.
+
+To start using the loop we'll need to set the first unit of work, and then write a `performUnitOfWork` function that not only performs the work but also returns the next unit of work.
+
+## Step 4: Fibers
+
+
