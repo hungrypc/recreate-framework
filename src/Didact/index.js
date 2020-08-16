@@ -1,6 +1,5 @@
-
-import { createElement } from './Didact/createElement'
-import { render } from './Didact/render'
+import { createElement } from './createElement'
+import { render } from './render'
 
 let nextUnitOfWork = null
 
