@@ -261,3 +261,9 @@ One of the goals of this data structure is to make it easy to find the next unit
 
 ![fiber tree](/notes-assets/fiber2.png)
 
+When we finish performing work on a fiber, if it has a `child` then that fiber will be the next unit of work. If the fiber *doesn't* have a `child`, we use the `sibling` as the next unit of work.
+
+From the example, when we finish working on the `div` fiber, the next unit of work will be the `h1` fiber. The `p` fiber doesn't have a `child` so we move on to the `a` fiber after finishing it.
+
+And if the fiber doesn't have a `child` nor a `sibling`, we go to the 'uncle': the `sibling` of the `parent`
+

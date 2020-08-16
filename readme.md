@@ -1,4 +1,4 @@
-# building a framwork from scratch
+# building a framework from scratch
 
 to learn and practice. rewriting react.
 
