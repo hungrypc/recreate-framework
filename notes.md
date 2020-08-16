@@ -259,7 +259,7 @@ In the `render` we'll create the root fiber and set it as the `nextUnitOfWork`. 
 
 One of the goals of this data structure is to make it easy to find the next unit of work. That's why each fiber has a link to its first child, its next sibling, and its parent.
 
-![fiber tree](/notes-assets/fiber2.png)
+![fiber tree](/notes-assets/fiber1.png)
 
 When we finish performing work on a fiber, if it has a `child` then that fiber will be the next unit of work. If the fiber *doesn't* have a `child`, we use the `sibling` as the next unit of work.
 
