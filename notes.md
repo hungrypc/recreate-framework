@@ -265,5 +265,122 @@ When we finish performing work on a fiber, if it has a `child` then that fiber w
 
 From the example, when we finish working on the `div` fiber, the next unit of work will be the `h1` fiber. The `p` fiber doesn't have a `child` so we move on to the `a` fiber after finishing it.
 
-And if the fiber doesn't have a `child` nor a `sibling`, we go to the 'uncle': the `sibling` of the `parent`
+And if the fiber doesn't have a `child` nor a `sibling`, we go to the 'uncle': the `sibling` of the `parent`.
+
+Also, if the `arent` doesn't have a `sibling`, we keep going up through the `parent`s until we find one with a `sibling` or until we reach the root. If we have reached the root, it means we have finished performing all the work for this `render`. 
+
+Let's put this into code:
+```js
+function createDom(fiber) {
+    // we kept the part that creates a DOM node in its own function, we're going to use it later.
+    const dom = 
+        fiber.type === 'TEXT_ELEMENT'
+            ? document.createTextNode('')
+            : document.createElement(fiber.type)
+    
+    const isProperty = key => key !== 'children'
+    Object.keys(fiber.props)
+        .filter(isProperty)
+        .forEach(name => {
+            dom[name] = fiber.props[name]
+        })
+
+    return dom
+}
+
+function render(element, container) {
+    // in the render function, we set `nextUnitOfWork` to the root of the fiber tree
+    nextUnitOfWork = {
+        dom: container,
+        props: {
+            children: [element]
+        }
+    }
+}
+
+let nextUnitOfWork = null
+
+// then, when the browser is ready, it will call our `workLoop` and we'll start working on the root
+function workLoop(deadline) {
+    let shouldYield = false
+    while (nextUnitOfWork && !shouldYield) {
+        nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+        shouldYield = deadline.timeRemaining() < 1
+    }
+    requestIdleCallback(workLoop)
+}
+
+requestIdleCallback(workLoop)
+
+function performUnitOfWork(fiber) {
+    // todo: add dom node
+    // todo: create new fibers
+    // todo: return next unit of work
+}
+```
+
+Let's dig a little deeper on `performUnitOfWork` on a separate piece.
+```js
+function performUnitOfWork(fiber) {
+    // todo: add dom node
+    // first, we create a new node and append it to the DOM
+    // we keep track of the DOM node in the `fiber.dom` property
+    if (!fiber.dom) {
+        fiber.dom = createDom(fiber)
+    }
+
+    if (fiber.parent) {
+        fiber.parent.dom.appendChild(fiber.dom)
+    }
+
+
+    // todo: create new fibers
+    // then for each child we create a new fiber
+    const elements = fiber.props.children
+    let index = 0
+    let prevSibling = null
+
+    while (index < elements.length) {
+        const element = elements[index]
+
+        const newFiber = {
+            type: element.type,
+            props: element.props,
+            parent: fiber,
+            dom: null
+        }
+
+        // and we add it to the fiber tree setting it either as a child or as a sibling, 
+        // depending on whether it's the first child or not
+        if (index === 0) {
+            fiber.child = newFiber
+        } else {
+            prevSibling.sibling = newFiber
+        }
+
+        prevSibling = newFiber
+        index++
+    }
+
+
+    // todo: return next unit of work
+    // finally we search for the next unit of work
+    // we first try with the child, then with the sibling, then with the uncle, and so on
+    if (fiber.child) {
+        return fiber.child
+    }
+    let nextFiber = fiber
+    while (nextFiber) {
+        if (nextFiber.sibling) {
+            return nextFiber.sibling
+        }
+        nextFiber = nextFiber.parent
+    }
+}
+```
+
+And that's our `performUnitOfWork`
+
+
+
 
