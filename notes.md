@@ -379,7 +379,7 @@ function performUnitOfWork(fiber) {
 }
 ```
 
-And that's our `performUnitOfWork`
+And that's our `performUnitOfWork`.
 
 
 
